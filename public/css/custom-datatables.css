@@ -1,0 +1,46 @@
+/* Custom CSS for DataTables in mobile view */
+@media (max-width: 767px) {
+    .dataTables_wrapper .dataTables_filter {
+        float: left !important;
+        text-align: left !important;
+    }
+    .dataTables_wrapper .dataTables_length {
+        float: left !important;
+        text-align: left !important;
+    }
+
+    .dataTables_length select {
+        margin-left: 14px;
+    }
+}
+
+/* Change the color of the Previous button */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous {
+    background-color: #53b394 !important;
+    color: #ffffff !important;
+    border-color: #53b394 !important;
+}
+
+/* Change the color of the Next button */
+.dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    background-color: #53b394 !important;
+    color: #ffffff !important;
+    border-color: #53b394 !important;
+}
+
+/* Change the color of the Previous and Next buttons when hovered */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous:hover,
+.dataTables_wrapper .dataTables_paginate .paginate_button.next:hover {
+    background-color: #2dd49c !important;
+    color: #ffffff !important;
+    border-color: #2dd49c !important;
+}
+
+.paginate_button {
+    background-color: #53b394 !important;
+    color: #ffffff !important;
+    border-color: #53b394 !important;
+}
+.text-center {
+    text-align: center;
+}
