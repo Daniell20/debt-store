@@ -1,6 +1,7 @@
 <?php
 
 namespace App;
+//store product
 
 use Illuminate\Database\Eloquent\Model;
 
