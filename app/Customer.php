@@ -8,7 +8,7 @@ class Customer extends Model
 {
     protected $table = 'customers';
     
-    protected $fillable = ['name', 'customer_id'];
+    protected $fillable = ["user_id", "merchant_id", "customer_no", "name", "address", "contact_number", "email", "credit_limit"];
 
     public function debtStatus()
     {

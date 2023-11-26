@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'customer_id', 'email', 'password', 'is_admin', 'is_merchant', 'is_customer'
+        'customer_id', 'email', 'password', 'is_admin', 'is_merchant', 'is_customer', "secret", "is_password_change",
     ];
 
     protected $table = 'users';
@@ -46,4 +46,3 @@ class User extends Authenticatable
         return $this->hasOne(Customer::class);
     }
 }
-

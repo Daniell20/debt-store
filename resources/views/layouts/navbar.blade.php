@@ -1,4 +1,20 @@
 <!--  Header Start -->
+<?php
+    $user = Auth::user();
+    if ($user->is_admin) {
+        $user_name = "Master Admin";
+        $route = "#";
+    } else if ($user->is_customer) {
+        $customer = \App\Customer::where("user_id", Auth::user()->id)->select("name")->first();
+        $user_name = $customer->name;
+        $route = url("customer/users-profile");
+    } else {
+        $merchant = \App\Merchant::where("user_id", Auth::user()->id)->select("name")->first();
+        $user_name = $merchant->name;
+        $route = url("merchant/users-profile");
+    }
+?>
+
 <header class="app-header">
     <nav class="navbar navbar-expand-lg navbar-light">
         <ul class="navbar-nav">
@@ -14,16 +30,14 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ asset('images/profile/user-1.jpg') }}" alt="" width="35"
-                            height="35" class="rounded-circle">
+                        <img src="{{ asset($user->profile_picture) }}" alt="" width="35" height="35" class="rounded-circle">
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
                         aria-labelledby="drop2">
                         <div class="message-body">
-                            <a href="javascript:void(0)"
-                                class="d-flex align-items-center gap-2 dropdown-item">
+                            <a href="{{ $route }}" class="d-flex align-items-center gap-2 dropdown-item">
                                 <i class="ti ti-user fs-6"></i>
-                                <p class="mb-0 fs-3">Hello {{ Auth::user()->customer ? Auth::user()->customer->name : Auth::user()->merchant ? Auth::user()->merchant->name : 'Master Admin' }}</p>
+                                <p class="mb-0 fs-3">Hello {{ mb_convert_case($user_name, MB_CASE_TITLE, "UTF-8") }}</p>
                             </a>
                             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">

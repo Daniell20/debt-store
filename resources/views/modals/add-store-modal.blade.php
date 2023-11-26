@@ -6,13 +6,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="" enctype="multipart/form-data">
+                <form action="" enctype="multipart/form-data" id="addStoreForm">
                     <div class="form-group px-2 mb-4">
                         <label for="store_logo">Store Logo</label>
-                        <input type="file" class="form-control" id="store_logo" name="store_logo">
-
+                        <input type="file" class="form-control store_logo" id="store_logo" name="store_logo">
+                        <div class="d-flex justify-content-center">
+                            <img class="img-fluid imagePreview" src="" alt="Selected Image" style="max-width: 100%; max-height: 200px; display: none">
+                        </div>
                         <p class="text-danger" id="store_logo_error"></p>
                     </div>
+                    
                     <div class="form-group px-2 mb-4">
                         <label for="store_name">Store Name</label>
                         <input type="text" class="form-control" id="store_name" name="store_name">
@@ -40,8 +43,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveStore">Save changes</button>
+                <button type="button" class="btn btn-primary" id="saveStore">Submit <span id="saveStoreLoader"></span></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

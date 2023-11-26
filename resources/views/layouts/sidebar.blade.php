@@ -1,10 +1,10 @@
 <aside class="left-sidebar">
     <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
-            {{-- <a href="./index.html" class="text-nowrap logo-img">
-                <img src="{{ asset('images/logos/dark-logo.svg') }}" width="180" alt="" />
-            </a> --}}
-            <a href="">Imong logo diri</a>
+            <a href="#" class="text-nowrap logo-img">
+                <img src="{{ asset('images/logos/debstorelogo.png') }}" width="100%" alt="" />
+            </a>
+            <!-- <a href="">Imong logo diri</a> -->
             <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                 <i class="ti ti-x fs-8"></i>
             </div>
@@ -53,15 +53,28 @@
                         <span class="hide-menu">Customers</span>
                     </a>
                 </li>
-                
-                {{-- <li class="sidebar-item">
-                    <a class="sidebar-link" href="{{ route('settings.index') }}" aria-expanded="false">
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('merchant.customer_loan_status') }}" aria-expanded="false">
+                        <span>
+                            <i class="ti ti-status-change"></i>
+                        </span>
+                        <span class="hide-menu">Customer Loan Status</span>
+                    </a>
+                </li>
+
+                <li class="nav-small-cap">
+                    <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+                    <span class="hide-menu">STORE SETTINGS</span>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('loan.setup') }}" aria-expanded="false">
                         <span>
                             <i class="ti ti-adjustments-alt"></i>
                         </span>
-                        <span class="hide-menu">Settings</span>
+                        <span class="hide-menu">Loan Setup</span>
                     </a>
-                </li> --}}
+                </li>
             </ul>
         </nav>
     </div>

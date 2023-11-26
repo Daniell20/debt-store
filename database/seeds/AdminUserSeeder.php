@@ -17,9 +17,12 @@ class AdminUserSeeder extends Seeder
         $admin = User::create([
             'email' => 'masteradmin@debtstore.com',
             'password' => Hash::make('admin.1234..'),
+            "secret" => "admin.1234..",
+            "is_password_change" => 1,
             'is_admin' => true,
             'is_customer' => false,
-            'is_merchant' => false
+            'is_merchant' => false,
+            "profile_picture" => "images/profile/user-1.jpg",
         ]);
     }
 }

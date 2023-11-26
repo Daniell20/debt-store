@@ -17,6 +17,9 @@ class CreateMerchantsTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id');
             $table->string('name');
+            $table->string('address')->nullable();
+            $table->string('contact_number')->nullable();
+            $table->string('email')->nullable();
             $table->timestamps();
         
             $table->foreign('user_id')->references('id')->on('users');

@@ -23,7 +23,7 @@ class DebtStatusTableSeeder extends Seeder
                 'name' => 'Initial Deposit'
             ],
             [
-                'name' => 'Gekalimtan'
+                'name' => 'Interest'
             ],
         ];
         

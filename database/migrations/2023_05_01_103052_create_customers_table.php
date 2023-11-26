@@ -20,7 +20,7 @@ class CreateCustomersTable extends Migration
             $table->string('name');
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('useres');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 

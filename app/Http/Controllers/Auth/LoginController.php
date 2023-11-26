@@ -29,15 +29,18 @@ class LoginController extends Controller
     {
         if (auth()->user()->is_admin == 1) {
             return '/admin/dashboard';
-        }
-        else if (auth()->user()->is_merchant == 1) {
-            return '/merchant/dashboard';
-        }
-        else if (auth()->user()->is_customer == 1) {
-            return '/customer/dashboard';
-        }
-        else {
-            return '/home';
+        } else if (auth()->user()->is_merchant == 1) {
+            if (auth()->user()->is_password_change == 0) {
+                return "merchant/change_password";
+            } else {
+                return '/merchant/dashboard';
+            }
+        } else if (auth()->user()->is_customer == 1) {
+            if (auth()->user()->is_password_change == 0) {
+                return "customer/change_password";
+            } else {
+                return 'customer/home';
+            }
         }
     }
 

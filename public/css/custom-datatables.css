@@ -16,31 +16,35 @@
 
 /* Change the color of the Previous button */
 .dataTables_wrapper .dataTables_paginate .paginate_button.previous {
-    background-color: #53b394 !important;
+    background-color: #5D87FF !important;
     color: #ffffff !important;
-    border-color: #53b394 !important;
+    border-color: #5D87FF !important;
 }
 
 /* Change the color of the Next button */
 .dataTables_wrapper .dataTables_paginate .paginate_button.next {
-    background-color: #53b394 !important;
+    background-color: #5D87FF !important;
     color: #ffffff !important;
-    border-color: #53b394 !important;
+    border-color: #5D87FF !important;
 }
 
 /* Change the color of the Previous and Next buttons when hovered */
 .dataTables_wrapper .dataTables_paginate .paginate_button.previous:hover,
 .dataTables_wrapper .dataTables_paginate .paginate_button.next:hover {
-    background-color: #2dd49c !important;
+    background-color: #5D87FF !important;
     color: #ffffff !important;
-    border-color: #2dd49c !important;
+    border-color: #5D87FF !important;
 }
 
 .paginate_button {
-    background-color: #53b394 !important;
+    background-color: #5D87FF !important;
     color: #ffffff !important;
-    border-color: #53b394 !important;
+    border-color: #5D87FF !important;
 }
 .text-center {
     text-align: center;
+}
+
+td {
+    border-bottom: 0;
 }

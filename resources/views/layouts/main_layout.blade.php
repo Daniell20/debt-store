@@ -9,13 +9,15 @@
     <link rel="stylesheet" href="{{ asset('css/styles.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/custom-datatables.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom-modified.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+    <link rel="stylesheet" href="{{ asset("css/magnific-popup.css") }}">
 
     {{-- IZI TOAS --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
+    <link rel="stylesheet" href="{{ asset("css/iziToast.min.css") }}">
 
     @yield('styles')
 </head>
@@ -32,12 +34,14 @@
     <script src="{{ asset('js/app.min.js') }}"></script>
     <script src="{{ asset('libs/apexcharts/dist/apexcharts.min.js') }}"></script>
     <script src="{{ asset('libs/simplebar/dist/simplebar.js') }}"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset("js/jquery.dataTables.min.js") }}"></script>
+    <script src="{{ asset("js/dataTables.responsive.min.js") }}"></script>
+    <script src="{{ asset("js/sweetalert2@11.js") }}"></script>
+
+    <script src="{{ asset("js/jquery.magnific-popup.min.js") }}"></script>
 
     {{-- IZI TOAST --}}
-    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+    <script src="{{ asset("js/iziToast.min.js") }}"></script>
     @yield('scripts')
 </body>
 

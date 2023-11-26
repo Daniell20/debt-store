@@ -64,7 +64,8 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // 'timezone' => 'UTC',
+    'timezone' => 'Asia/Manila',
 
     /*
     |--------------------------------------------------------------------------
@@ -228,5 +229,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
 
     ],
+    
+    'paymongo_secret_key' => env('PAYMONGO_SECRET_KEY'),
+    'paymongo_public_key' => env('PAYMONGO_PUBLIC_KEY'),
 
 ];

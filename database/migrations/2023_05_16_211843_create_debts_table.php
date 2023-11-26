@@ -16,15 +16,14 @@ class CreateDebtsTable extends Migration
         Schema::create('debts', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('customer_id');
-            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('product_id');
             $table->float('amount');
             $table->date('due_date');
-            $table->enum('status', ['unpaid', 'paid', 'over due']);
             $table->timestamps();
 
             
             $table->foreign('customer_id')->references('id')->on('customers');
-            $table->foreign('order_id')->references('id')->on('orders');
+            $table->foreign('product_id')->references('id')->on('products');
         });
     }
 

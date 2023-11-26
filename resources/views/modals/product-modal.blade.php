@@ -5,15 +5,16 @@
                 <h5 class="modal-title" id="editDeleteProductModalLabel">Edit/Delete Product</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="" enctype="multipart/form-data">
+            <form action="" enctype="multipart/form-data" id="editProductForm">
                 <div class="modal-body">
                     <input type="hidden" id="edit_product_id">
-                    <div class="form-group">
-                        <label for="editproduct_image">Product Image</label>
-                        <input type="file" name="product_image" id="edit_product_image" class="form-control"> 
-                        Current Image: <span id="current_image_name" class="d-none"></span>
-                    
-                        <p id="product_image_error" class="text-danger"></p>
+                    <div class="form-group px-2 mb-4">
+                        <label for="product_image">Product Image</label>
+                        <input type="file" name="product_image" id="product_image" class="form-control product_image">
+                        <div class="d-flex justify-content-center">
+                            <img class="img-fluid productImagePreview" style="max-width: 100%; max-height: 200px; display: none;">
+                        </div>
+                        <p class="text-danger" id="product_logo_error"></p>
                     </div>
                     <div class="form-group">
                         <label for="edit_product_name">Product Name</label>
