@@ -22,6 +22,8 @@ Route::get('/', function () {
 Route::middleware(['role:merchant', 'role:customer'])->group(function () {
     Route::get("/users-profile", "UserController@userDetails")->name("users.profile");
     Route::post("/users-update_profile", "UserController@updateProfile")->name("user.update_profile");
+
+    Route::post("/update-new_password", "UserController@updateNewPassword")->name("update.new-password");
 });
 
 Route::get("/user-interest", "InterestController@viewLoanInterestStatus")->name("users.interest");
@@ -33,6 +35,7 @@ Route::group(['middleware' => ['role:customer'], 'prefix' => 'customer'], functi
     Route::get("/users-profile", "UserController@userDetails")->name("users.profile");
     Route::post("/users-update_profile", "UserController@updateProfile")->name("user.update_profile");
 
+    Route::post("/update-new_password", "UserController@updateNewPassword")->name("update.new-password");
 
     Route::get('/home', 'UserController@index')->name('users.dashboard');
     Route::get("/shop", "UserController@shop")->name("users.shop");
@@ -109,6 +112,10 @@ Route::group(['middleware' => ['role:customer'], 'prefix' => 'customer'], functi
     Route::get("/recent_transaction_data", "UserController@recentTransactionData")->name("users.recent_transaction_data");
     Route::get("/recent_payment_transaction_data", "UserController@recentPaymentTransactionData")->name("users.recent_payment_transaction_data");
 
+    ######## Update Claimed Status #######
+
+    Route::post("is-claimed", "UserController@isClaimed")->name("users.is_claimed");
+
     // Interest Calculation
     Route::get('/run_interest_calculation', 'InterestController@runInterestCalculation');
 
@@ -176,6 +183,7 @@ Route::group(['middleware' => ['role:merchant'], 'prefix' => 'merchant'], functi
     Route::get("/users-profile", "UserController@userDetails")->name("users.profile");
     Route::post("/users-update_profile", "UserController@updateProfile")->name("user.update_profile");
 
+    Route::post("/update-new_password", "UserController@updateNewPassword")->name("update.new-password");
 
     ####### Dashboard #######
     Route::get('/dashboard', 'MerchantController@dashboard')->name('merchant.dashboard');

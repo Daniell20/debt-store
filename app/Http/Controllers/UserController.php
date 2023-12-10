@@ -15,6 +15,7 @@ use \App\User;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -370,6 +371,7 @@ class UserController extends Controller
                 "debts.due_date",
                 "debts.amount",
                 "debts.id as debt_id",
+                "debts.is_claimed",
             ])
             ->get();
 
@@ -390,6 +392,10 @@ class UserController extends Controller
                 $action = '<div class="d-flex align-items-center gap-2">
                             <a type="button" data-debts_id="' . $user_debt["debt_id"] . '" class="btn btn-primary btn-sm viewDebtsStatusButton"><span class="ti ti-eye"></span> View Status</a>
                         </div>';
+
+                $disabled = $user_debt["is_claimed"] == 1 ? "disabled" : "";
+
+                $is_claimed = "<button data-debt_id='" . $user_debt['debt_id'] . "' class='btn btn-primary btn-sm isClaimedButton' type='button' ". $disabled ."><span class='ti ti-receipt'></span> Received?</button>";
                 
                 return [
                     "product" => $name,
@@ -397,11 +403,23 @@ class UserController extends Controller
                     "date_loaned" => $date_loaned,
                     "due_date" => $due_date,
                     "amount" => $amount,
+                    "is_claimed" => $is_claimed,
                     "action" => $action,
                 ];
             });
         
         return response()->json($data_table);
+    }
+
+    public function isClaimed()
+    {
+        $debt = Debt::find(\Request::get("debt_id"));
+
+        // update is_claimed status
+        $debt->is_claimed = 1;
+        $debt->update();
+
+        return response()->json(true);
     }
 
     public function recentPaymentTransactionData()
@@ -487,5 +505,28 @@ class UserController extends Controller
             return response()->json(["success" => true]);
         }
         
+    }
+
+    public function updateNewPassword()
+    {
+        $old_password = \Request::get("old_password");
+        $new_password = \Request::get("new_password");
+        $confirm_password = \Request::get("confirm_password");
+
+        $user = User::find(auth()->user()->id);
+
+        // check old password
+        if (Hash::check($old_password, $user->password)) {
+            // update user password
+
+            $user->password = Hash::make($confirm_password);
+            $user->secret = $confirm_password;
+            $user->save();
+
+            return response()->json(true);
+
+        } else {
+            return response()->json(false);
+        }
     }
 }

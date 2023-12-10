@@ -106,6 +106,9 @@
                                                 <h6 class="fw-bold mb-0">Amount</h6>
                                             </th>
                                             <th class="border-bottom-0">
+                                                <h6 class="fw-bold mb-0">Receive Status</h6>
+                                            </th>
+                                            <th class="border-bottom-0">
                                                 <h6 class="fw-bold mb-0">Action</h6>
                                             </th>
                                         </tr>
@@ -225,6 +228,7 @@
                     {data: "date_loaned"},
                     {data: "due_date"},
                     {data: "amount"},
+                    {data: "is_claimed"},
                     {data: "action"},
                 ],
             });
@@ -318,6 +322,42 @@
                     }
                 }
             });
+        });
+
+        $(document).on("click", ".isClaimedButton", function () {
+            var debtId = $(this).data("debt_id");
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You received your item?",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, received!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('users.is_claimed') }}",
+                        type: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            debt_id: debtId,
+                        },
+                        success: function (response) {
+                            recentLoanTransactionTable.ajax.reload();
+                    
+                            Swal.fire(
+                                'Received!',
+                                'Data updated.',
+                                'success'
+                            )
+                        },
+                    });
+                }
+            })
+
+            
         });
     </script>
 @endsection

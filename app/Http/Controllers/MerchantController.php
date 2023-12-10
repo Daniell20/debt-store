@@ -345,7 +345,7 @@ class MerchantController extends Controller
             ->join("debt_interests", "debt_interests.debt_id", "=", "debts.id")
             ->join("loan_settings", "debt_interests.loan_setting_id", "=", "loan_settings.id")
             ->where("customers.merchant_id", $merchant->id)
-            ->get(["customers.name as customer_name", "products.name as product_name", "debt_statuses.name as debt_status_name", "debts.debt_status_id", "debts.due_date" , "debts.id as debt_id", "loan_settings.interest_rate", "debts.amount"]);
+            ->get(["customers.name as customer_name", "debts.is_claimed", "products.name as product_name", "debt_statuses.name as debt_status_name", "debts.debt_status_id", "debts.due_date" , "debts.id as debt_id", "loan_settings.interest_rate", "debts.amount"]);
 
         $data_table = collect($customer_debts)
             ->map(function ($customer_debt) {
@@ -358,6 +358,8 @@ class MerchantController extends Controller
                 } else {
                     $bg = "bg-info";
                 }
+
+                $claimed = $customer_debt["is_claimed"] == 0 ? "<span class='badge bg-danger'>Not Claimed</span>" : "<span class='badge bg-success'>Claimed</span>";
 
                 $debt_status = '<span class="badge ' . $bg . '">' . $customer_debt["debt_status_name"] . '</span>';
 
@@ -372,6 +374,7 @@ class MerchantController extends Controller
 					"amount" => "<span class='ti ti-currency-peso'></span>" . $customer_debt["amount"],
 					"interest_rate" => $customer_debt["interest_rate"] . "%",
 					"debt_status" => $debt_status,
+					"is_claimed" => $claimed,
 					"action" => $action,
                 ];
             });

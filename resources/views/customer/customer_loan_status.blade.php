@@ -23,6 +23,7 @@
 									<th>Amount</th>
 									<th>Interest Rate</th>
 									<th>Status</th>
+									<th>Claimed Status</th>
 									<th>Action</th>
 								</tr>
 							</thead>
@@ -62,6 +63,7 @@
 					{data: "amount"},
 					{data: "interest_rate"},
 					{data: "debt_status"},
+					{data: "is_claimed"},
 					{data: "action"},
 				],
 			});

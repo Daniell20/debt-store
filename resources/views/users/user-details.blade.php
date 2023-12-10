@@ -98,7 +98,7 @@
                                     <div class="col-md-6">
                                         <label class="small mb-1 d-flex justify-content-between" for="password">
                                             <span>Password</span>
-                                            <span class="text-right"><a href="">Change Password?</a></span>
+                                            <span class="text-right"><a id="changePasswordButton" style="color: blue; cursor: pointer;">Change Password?</a></span>
                                         </label>
                                         <input class="form-control" id="password" type="password" placeholder="Enter your username" value="{{ $user_detail->secret }}" disabled>
                                     </div>
@@ -138,6 +138,44 @@
             </form>
         </div>
 	</div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="form-group" id="updatePasswordForm">
+
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
+                    <div class="modal-body">
+                        <div class="col-md-12">
+                            <label for="old-password" class="form-label">Old Password</label>
+                            <input type="password" class="form-control" name="old_password" id="old_password">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="new-password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" name="new_password" id="new_password">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="confirm-password" class="form-label">Confrim Password</label>
+                            <input type="password" class="form-control" name="confirm_password" id="confirm_password">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="ti ti-x"></span> Close</button>
+                        <button type="submit" id="updateButton" class="btn btn-primary" disabled><span class="ti ti-edit"></span> Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 @section("scripts")
     <script>
@@ -181,6 +219,11 @@
         }
 
         $(document).ready(function () {
+
+            $("#changePasswordButton").click(function () {
+                $("#changePasswordModal").modal("show");
+            });
+
             $("#userProfileForm").on("submit", function (e) {
                 e.preventDefault();
 
@@ -219,5 +262,54 @@
                 });
             });
         });
+
+        $(document).on("keyup", "#confirm_password", function () {
+            if ($("#new_password").val() == $(this).val()) {
+                $("#updateButton").prop("disabled", false);
+                $("#confirm_password").css("border", "1px solid green");
+
+                $("#updatePasswordForm").off("submit").on("submit", function (e) {
+                    e.preventDefault();
+
+                    var formData = new FormData(document.getElementById("updatePasswordForm"));
+
+                    $.ajax({
+                        url: "{{ route('update.new-password') }}",
+                        type: "POST",
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            if (response) {
+                                iziToast.success({
+                                    title: "Success",
+                                    message: "Password updated!",
+                                    position: "topRight",
+                                    transitionIn: "bounceInDown",
+                                    transitionOut: "flipOutX",
+                                    timeout: 2000,
+                                    onClosed: function () {
+                                        location.reload();
+                                    }
+                                })
+                            } else {
+                                iziToast.error({
+                                    title: "Oopps",
+                                    message: "Old password did not match, please try again!",
+                                    position: "topRight",
+                                    transitionIn: "bounceInDown",
+                                    transitionOut: "flipOutX",
+                                });
+                            }
+                        },
+                    });
+                });
+            } else {
+                $("#updateButton").prop("disabled", true);
+
+                $("#confirm_password").css("border", "1px solid red");
+            }
+        });
+
     </script>
 @endsection
