@@ -18,6 +18,7 @@ class AdminController extends Controller
 {
     public function index()
     {
+        
         $user_array = [];
         $user = User::where("is_active", 1)->where("is_admin", "!=", 1)->get();
         $users = $user->count();
@@ -51,6 +52,7 @@ class AdminController extends Controller
         }
         // $merchants_percentage = ($merchants_today / $merchants) * 100;
         // $customers_percentage = ($customers_today / $customers) * 100;
+        // return $user;
 
         return view('admin.index', compact("users", "merchants", "customers", "customers_today", "merchants_today", "inactive_merchants", "inactive_customers", "merchants_percentage", "customers_percentage"));
     }
@@ -62,6 +64,8 @@ class AdminController extends Controller
 
     public function storeMerchant()
     {
+
+        
         \Validator::make(\Request::all(), [
             'merchant_name' => 'required|unique:merchants,name',
         ])->validate();
