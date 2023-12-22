@@ -36,7 +36,7 @@ class UserController extends Controller
 
         $customer_interests = CustomerInterest::where("customer_id", $user_customer->id)
             ->where("debt_status_id", 2);
-            
+
         return view('users.users-dashboard', compact("user_customer", "user_debts", "transactions", "previous_credit_usage", "loan_amount_data", "customer_interests"));
     }
 
@@ -69,14 +69,14 @@ class UserController extends Controller
                 ->join("users", "customers.user_id", "=", "users.id")
                 ->select("users.email as username", "users.secret", "users.profile_picture", "customers.name", "customers.address", "customers.contact_number", "customers.email", "users.id as user_id")
                 ->first();
-            
+
             $user_detail = $customer;
         } else if ($user->is_merchant == 1) {
             $merchant = Merchant::where("merchants.user_id", $user->id)
                 ->join("users", "merchants.user_id", "=", "users.id")
                 ->select("users.email as username", "users.secret", "users.profile_picture", "merchants.name", "merchants.address", "merchants.contact_number", "merchants.email", "users.id as user_id")
                 ->first();
-            
+
             $user_detail = $merchant;
         }
 
@@ -286,10 +286,11 @@ class UserController extends Controller
     }
 
     public function loanDetails()
-    {   
+    {
         $products = Product::where("store_id", \Request::get("store_id"))
             ->where("products.id", \Request::get('product_id'))
             ->first();
+
         $store = Store::where("id", $products->store_id)->first();
         $loan_settings = LoanSetting::where("merchant_id", $store->merchant_id)->orderBy("months_to_pay", "ASC")->get();
 
@@ -301,10 +302,10 @@ class UserController extends Controller
         $loan_settings_id = LoanSetting::where("id", \Request::get("loan_settings_id"))->first();
         $product_id = \Request::get("product_id");
         $months_to_pay = $loan_settings_id->months_to_pay;
-        
+
         $current_date = Carbon::now();
         $due_date = Carbon::now()->addMonths($months_to_pay);
-        
+
         $user_customer = Customer::where("customers.user_id", auth()->user()->id)->first();
         $product = Product::where("products.id", $product_id)->first();
 
@@ -316,7 +317,7 @@ class UserController extends Controller
             "due_date" => $due_date->format('Y-m-d'),
             "amount_paid" => 0,
             "debt_status_id" => 2, // 2 means unpaid
-            "current_amount" => $product->price, 
+            "current_amount" => $product->price,
             "product_price_change_date" => $product->updated_at,
         ]);
 
@@ -359,7 +360,7 @@ class UserController extends Controller
     }
 
     public function recentTransactionData()
-    {   
+    {
         $user_customer = Customer::where("user_id", \Auth::user()->id)->first();
 
         $user_debts = Debt::join("products", "debts.product_id", "=", "products.id")
@@ -368,26 +369,29 @@ class UserController extends Controller
                 "products.name",
                 "products.description",
                 "debts.created_at",
+                "debts.updated_at",
                 "debts.due_date",
                 "debts.amount",
                 "debts.id as debt_id",
                 "debts.is_claimed",
             ])
+            ->orderBy("is_claimed", "ASC")
+            ->orderBy("updated_at", "DESC")
             ->get();
 
         $data_table = collect($user_debts)
 
             ->map(function ($user_debt) {
 
-                $name = '<h6 class="fw-semibold mb-1">'.$user_debt["name"].'</h6>';
-                $description = '<p class="mb-0 fw-normal">'.$user_debt["description"].'</p>';
+                $name = '<h6 class="fw-semibold mb-1">' . $user_debt["name"] . '</h6>';
+                $description = '<p class="mb-0 fw-normal">' . $user_debt["description"] . '</p>';
                 $date_loaned = '<div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-success rounded-3 fw-semibold">'. Carbon::parse($user_debt["created_at"])->format("m/d/Y").'</span>
+                                <span class="badge bg-success rounded-3 fw-semibold">' . Carbon::parse($user_debt["created_at"])->format("m/d/Y") . '</span>
                             </div>';
                 $due_date = '<div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-danger rounded-3 fw-semibold">'. Carbon::parse($user_debt["due_date"])->format("m/d/Y") .'</span>
+                                <span class="badge bg-danger rounded-3 fw-semibold">' . Carbon::parse($user_debt["due_date"])->format("m/d/Y") . '</span>
                             </div>';
-                $amount = '<h6 class="fw-semibold mb-0 fs-4"><span class="ti ti-currency-peso"></span>'. $user_debt["amount"] .'</h6>';
+                $amount = '<h6 class="fw-semibold mb-0 fs-4"><span class="ti ti-currency-peso"></span>' . $user_debt["amount"] . '</h6>';
 
                 $action = '<div class="d-flex align-items-center gap-2">
                             <a type="button" data-debts_id="' . $user_debt["debt_id"] . '" class="btn btn-primary btn-sm viewDebtsStatusButton"><span class="ti ti-eye"></span> View Status</a>
@@ -395,8 +399,8 @@ class UserController extends Controller
 
                 $disabled = $user_debt["is_claimed"] == 1 ? "disabled" : "";
 
-                $is_claimed = "<button data-debt_id='" . $user_debt['debt_id'] . "' class='btn btn-primary btn-sm isClaimedButton' type='button' ". $disabled ."><span class='ti ti-receipt'></span> Received?</button>";
-                
+                $is_claimed = "<button data-debt_id='" . $user_debt['debt_id'] . "' class='btn btn-primary btn-sm isClaimedButton' type='button' " . $disabled . "><span class='ti ti-receipt'></span> Received?</button>";
+
                 return [
                     "product" => $name,
                     "name" => $description,
@@ -407,7 +411,7 @@ class UserController extends Controller
                     "action" => $action,
                 ];
             });
-        
+
         return response()->json($data_table);
     }
 
@@ -425,7 +429,9 @@ class UserController extends Controller
     public function recentPaymentTransactionData()
     {
         $customer = Customer::where("user_id", \Auth::user()->id)->first();
-        $transactions = Transaction::where("transactions.customer_id", $customer->id)->get();
+        $transactions = Transaction::where("transactions.customer_id", $customer->id)
+            ->orderBy("transactions.updated_at", "DESC")
+            ->get();
 
         $data_table = collect($transactions)
             ->map(function ($transaction) {
@@ -451,7 +457,8 @@ class UserController extends Controller
         return response()->json($data_table);
     }
 
-    public function updateProfile() {
+    public function updateProfile()
+    {
         $user_id = \Request::get("user_id");
         $profile_image = \Request::file("profile_image");
         $name = \Request::get("name");
@@ -481,7 +488,7 @@ class UserController extends Controller
                 "numeric",
                 Rule::unique($table, "contact_number")->ignore($user->id),
             ],
-            "profile_image" => "image|mimes:jpeg,png,jpg,gif|max:2048", 
+            "profile_image" => "image|mimes:jpeg,png,jpg,gif|max:2048",
         ]);
 
         if ($validator->fails()) {
@@ -489,7 +496,7 @@ class UserController extends Controller
         } else {
 
             if ($profile_image) {
-                $original_filename =  $profile_image->getClientOriginalName();
+                $original_filename = $profile_image->getClientOriginalName();
                 $image_path = $profile_image->move(public_path('images/profile_images'), $original_filename);
 
                 $users->profile_picture = "images/profile_images/" . $original_filename;
@@ -504,7 +511,7 @@ class UserController extends Controller
 
             return response()->json(["success" => true]);
         }
-        
+
     }
 
     public function updateNewPassword()

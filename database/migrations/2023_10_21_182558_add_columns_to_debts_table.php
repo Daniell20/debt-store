@@ -14,7 +14,7 @@ class AddColumnsToDebtsTable extends Migration
     public function up()
     {
         Schema::table('debts', function (Blueprint $table) {
-            $table->bigInteger('amount_paid')->after("amount");
+            $table->float('amount_paid')->after("amount");
             $table->integer('debt_status_id')->after("amount_paid");
             $table->boolean("is_claimed")->after("debt_status_id")->default(false);
             $table->bigInteger('current_amount')->after("debt_status_id");

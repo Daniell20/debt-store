@@ -62,7 +62,7 @@ class MerchantController extends Controller
         $earnings = $transactions->get(["transactions.amount"]);
 
         $top_debtors_arr = [];
-        
+
         $top_debtors = Debt::join("customers", "debts.customer_id", "=", "customers.id")
             ->whereIn("debts.customer_id", $customers)
             ->get(["debts.amount", "customers.name"]);
@@ -78,21 +78,21 @@ class MerchantController extends Controller
             \DB::raw('DATE(transaction_date) as date'),
             \DB::raw('SUM(amount) as total_amount')
         )
-        ->groupBy('date')
-        ->orderBy('date', 'asc')
-        ->get();
-    
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+
         // Calculate the percentage change
         $percentage_changes = [];
         $previous_total = null;
-    
+
         foreach ($daily_transactions as $daily_transaction) {
             $percentage_change = 0;
-    
+
             if ($previous_total !== null) {
                 $percentage_change = ($daily_transaction->total_amount - $previous_total) / $previous_total * 100;
             }
-    
+
             $percentage_changes[$daily_transaction->date] = $percentage_change;
             $previous_total = $daily_transaction->total_amount;
         }
@@ -162,7 +162,7 @@ class MerchantController extends Controller
         $stores = Store::where("stores.id", \Request::get("store_id"))
             ->get();
 
-        return response()->json(["data"=> $stores], 200);
+        return response()->json(["data" => $stores], 200);
     }
 
     public function updateProduct(Request $request)
@@ -172,7 +172,7 @@ class MerchantController extends Controller
             'product_price' => 'required|numeric|min:9',
             'product_description' => 'nullable',
         ];
-        
+
         if (\Request::hasFile('product_image')) {
             $rules['product_image'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2048';
         }
@@ -223,7 +223,7 @@ class MerchantController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         } else {
-            
+
             $update_store = Store::find(\Request::get('id'));
             //check image if the user upload new image
             if ($request->hasFile('store_logo')) {
@@ -231,7 +231,7 @@ class MerchantController extends Controller
                 $file = $request->file('store_logo');
                 $filename = $file->getClientOriginalName();
                 $file->move(public_path('images/stores/'), $filename);
-    
+
                 // Update the store image field in the database
                 $update_store->logo = 'images/stores/' . $filename;
             }
@@ -240,7 +240,7 @@ class MerchantController extends Controller
             $update_store->address = \Request::get('store_address');
             $update_store->phone = \Request::get('store_phone');
             $update_store->update();
-    
+
             return response()->json(['success' => 'Store updated successfully!', 200]);
         }
 
@@ -261,7 +261,8 @@ class MerchantController extends Controller
         return response()->json(['success' => 'Product deleted successfully!'], 200);
     }
 
-    public function deleteStore() {
+    public function deleteStore()
+    {
         $delete_store = Store::find(\Request::get('id'));
 
         $image_path = $delete_store->logo;
@@ -338,14 +339,16 @@ class MerchantController extends Controller
     public function customerLoanStatusData()
     {
         $merchant = Merchant::where("user_id", \Auth::user()->id)->first();
-        
+
         $customer_debts = Debt::join("customers", "debts.customer_id", "=", "customers.id")
-            ->join("products", "debts.product_id", "=" , "products.id")
+            ->join("products", "debts.product_id", "=", "products.id")
             ->join("debt_statuses", "debts.debt_status_id", "=", "debt_statuses.id")
             ->join("debt_interests", "debt_interests.debt_id", "=", "debts.id")
             ->join("loan_settings", "debt_interests.loan_setting_id", "=", "loan_settings.id")
             ->where("customers.merchant_id", $merchant->id)
-            ->get(["customers.name as customer_name", "debts.is_claimed", "products.name as product_name", "debt_statuses.name as debt_status_name", "debts.debt_status_id", "debts.due_date" , "debts.id as debt_id", "loan_settings.interest_rate", "debts.amount"]);
+            ->orderBy("debts.debt_status_id", "DESC")
+            ->orderBy("debts.updated_at", "ASC")
+            ->get(["customers.name as customer_name", "debts.is_claimed", "products.name as product_name", "debt_statuses.name as debt_status_name", "debts.debt_status_id", "debts.due_date", "debts.id as debt_id", "loan_settings.interest_rate", "debts.amount"]);
 
         $data_table = collect($customer_debts)
             ->map(function ($customer_debt) {
@@ -370,12 +373,12 @@ class MerchantController extends Controller
 
                 return [
                     "customer_name" => $customer_debt["customer_name"],
-					"product_owed" => $customer_debt["product_name"],
-					"amount" => "<span class='ti ti-currency-peso'></span>" . $customer_debt["amount"],
-					"interest_rate" => $customer_debt["interest_rate"] . "%",
-					"debt_status" => $debt_status,
-					"is_claimed" => $claimed,
-					"action" => $action,
+                    "product_owed" => $customer_debt["product_name"],
+                    "amount" => "<span class='ti ti-currency-peso'></span>" . $customer_debt["amount"],
+                    "interest_rate" => $customer_debt["interest_rate"] . "%",
+                    "debt_status" => $debt_status,
+                    "is_claimed" => $claimed,
+                    "action" => $action,
                 ];
             });
 
@@ -397,8 +400,8 @@ class MerchantController extends Controller
                 $status_name = $user->is_active == 1 ? "Deactivate" : "Activate";
 
                 $action = '
-                    <a class="btn btn-primary btn-sm viewCustomerDetail" data-customer_id="' .$user["customer_id"]. '"><span class="ti ti-eye-check"></span> View</a>
-                    <a class="btn btn-danger btn-sm deactivateCustomerButton" data-status_id="' .$user["is_active"]. '" data-user_id="' .$user["user_id"]. '"><span class="ti ti-trash"></span> ' .$status_name. '</a>
+                    <a class="btn btn-primary btn-sm viewCustomerDetail" data-customer_id="' . $user["customer_id"] . '"><span class="ti ti-eye-check"></span> View</a>
+                    <a class="btn btn-danger btn-sm deactivateCustomerButton" data-status_id="' . $user["is_active"] . '" data-user_id="' . $user["user_id"] . '"><span class="ti ti-trash"></span> ' . $status_name . '</a>
                 ';
 
                 return [
@@ -479,11 +482,11 @@ class MerchantController extends Controller
             // create customer data
             $customer_create = Customer::create([
                 "user_id" => $user_create->id,
-                "merchant_id" => $merchant->id, 
-                "customer_no" => $customer_credential, 
-                "name" => $customer_name, 
-                "address" => $customer_address, 
-                "contact_number" => $customer_contact_number, 
+                "merchant_id" => $merchant->id,
+                "customer_no" => $customer_credential,
+                "name" => $customer_name,
+                "address" => $customer_address,
+                "contact_number" => $customer_contact_number,
                 "email" => $customer_email,
                 "credit_limit" => $credit_limit,
             ]);
@@ -533,7 +536,8 @@ class MerchantController extends Controller
 
     }
 
-    public function customerUpdateDetail() {
+    public function customerUpdateDetail()
+    {
         $customer_id = \Request::get("customer_id");
         $name = \Request::get("name");
         $address = \Request::get("address");

@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    public function payments() {
+    public function payments()
+    {
 
         $request = session("chargable_status");
 
@@ -33,8 +34,8 @@ class PaymentController extends Controller
                         "amount" => $amount,
                         "currency" => "PHP",
                         "source" => [
-                        "id" => $source_id,
-                        "type" => "source"
+                            "id" => $source_id,
+                            "type" => "source"
                         ]
                     ]
                 ]
@@ -46,7 +47,7 @@ class PaymentController extends Controller
             ],
             CURLOPT_SSL_VERIFYPEER => false, // true if deployed
             CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_CONNECTTIMEOUT => 0, 
+            CURLOPT_CONNECTTIMEOUT => 0,
         ]);
 
         $response = curl_exec($curl);
@@ -89,27 +90,25 @@ class PaymentController extends Controller
                     $customer_debt_count = $customer_debts->count();
                     $amount_divided = $amount_in_peso / ($customer_debt_count + $customer_interests->count());
 
-                    // update the customers debts base on amount transaction
-                    foreach ($customer_debts as $customer_debt) {
-                        // Calculate the remaining debt amount
-                        $remaining_debt = $customer_debt->amount - $customer_debt->amount_paid;
+                    $customer_paid_amount = $amount_in_peso; // The amount the customer has paid
 
-                        if ($remaining_debt >= $amount_divided) {
-                            // If the remaining debt is greater than the divided amount, subtract it
-                            $customer_debt->amount_paid += $amount_divided;
-                            $customer_debt->debt_status_id = 3; // Initialy paid
-                            $customer_debt->update();
-                        } else {
-                            // If the remaining debt is less than the divided amount, pay off the remaining debt
-                            $customer_debt->amount_paid = $customer_debt->amount;
-                            $customer_debt->debt_status_id = 3; // Initialy paid
-                            $customer_debt->update();
+                    foreach ($customer_debts as $customer_debt) {
+                        $debt_remaining = $customer_debt->amount - $customer_debt->amount_paid; // Calculate the remaining debt for this item
+
+                        if ($customer_paid_amount >= $debt_remaining) { // If the paid amount covers the entire debt
+                            $customer_debt->amount_paid += $debt_remaining; // Pay off the entire debt
+                            $customer_paid_amount -= $debt_remaining; // Deduct the debt amount from the paid amount
+                            $customer_debt->debt_status_id = 1;
+                        } else { // If the paid amount doesn't cover the entire debt
+                            $customer_debt->amount_paid += $customer_paid_amount; // Pay off as much as possible
+                            $customer_debt->debt_status_id = 3;
+                            $customer_paid_amount = 0; // All the paid amount has been used
                         }
 
-                        // Check if amount_paid equals amount and update debt_status_id
-                        if ($customer_debt->amount_paid == $customer_debt->amount) {
-                            $customer_debt->debt_status_id = 1; // Paid
-                            $customer_debt->update();
+                        $customer_debt->update(); // Update the debt item
+
+                        if ($customer_paid_amount == 0) { // If there's no paid amount left, no need to continue
+                            break;
                         }
                     }
 
@@ -119,11 +118,11 @@ class PaymentController extends Controller
                             if ($interest->calculated_interest_amount >= $amount_divided) {
                                 $interest->calculated_interest_amount -= $amount_divided;
                                 $interest->update();
-                                $amount_divided = 0; // Fully paid the interest
+                                $amount_divided = 0;
 
-                                // Check if the interest is fully paid, and update the debt_status_id accordingly
+                                // Check if the interest is fully paid and update the debt_status_id accordingly
                                 if ($interest->calculated_interest_amount == 0) {
-                                    $interest->debt_status_id = 1; // Set to "Paid" or the appropriate status
+                                    $interest->debt_status_id = 1;
                                     $interest->update();
                                 }
                             } else {
@@ -147,7 +146,8 @@ class PaymentController extends Controller
         }
     }
 
-    public function loanPaymentFail() {
+    public function loanPaymentFail()
+    {
 
         $response = session('response');
         $source = $response['data']['id'];
@@ -167,7 +167,7 @@ class PaymentController extends Controller
             ],
             CURLOPT_SSL_VERIFYPEER => false, // true if deployed
             CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_CONNECTTIMEOUT => 0, 
+            CURLOPT_CONNECTTIMEOUT => 0,
         ]);
 
         $response = curl_exec($curl);
