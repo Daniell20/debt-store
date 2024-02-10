@@ -18,7 +18,7 @@ class AdminController extends Controller
 {
     public function index()
     {
-        
+
         $user_array = [];
         $user = User::where("is_active", 1)->where("is_admin", "!=", 1)->get();
         $users = $user->count();
@@ -27,7 +27,7 @@ class AdminController extends Controller
 
         $inactive_merchants = User::where("is_merchant", 1)
             ->where("is_active", 0)->count();
-        
+
         $inactive_customers = User::where("is_customer", 1)
             ->where("is_active", 0)->count();
 
@@ -44,7 +44,7 @@ class AdminController extends Controller
         } else {
             $merchants_percentage = 0; // or some other appropriate value
         }
-        
+
         if ($customers != 0) {
             $customers_percentage = ($customers_today / $customers) * 100;
         } else {
@@ -65,7 +65,7 @@ class AdminController extends Controller
     public function storeMerchant()
     {
 
-        
+
         \Validator::make(\Request::all(), [
             'merchant_name' => 'required|unique:merchants,name',
         ])->validate();
@@ -111,26 +111,32 @@ class AdminController extends Controller
                 "merchants.name",
                 "users.email",
                 "users.secret",
+                "users.is_restricted",
                 "merchants.id as merchant_id",
             ]);
 
         $data_table = collect($merchants)
-            ->map(function ($merchants) {
+            ->map(function ($merchant) {
 
-                $is_active = $merchants->is_active == 1 ? "checked" : "";
-                $button_disabled = $merchants->is_active == 0 ? "disabled" : "";
+                $is_active = $merchant->is_active == 1 ? "checked" : "";
+                $button_disabled = $merchant->is_active == 0 || $merchant->is_restricted == 1 ? "disabled" : "";
+                $restrict_label = $merchant->is_restricted == 1 ? "Unrestricted" : "Restricted";
 
                 $action = '
                     <div class="form-check form-switch d-flex align-items-center">
-                        <input class="form-check-input" data-user_id="' . $merchants->user_id . '" data-is_active="' . $merchants->is_active . '" type="checkbox" role="switch" id="activeMerchant" ' . $is_active . '>
-                        <button class="btn btn-primary btn-sm viewMerchant" data-merchant_id="' . $merchants->merchant_id . '" style="margin-left: 13px;" ' . $button_disabled . '><span class="ti ti-eye"></span> View</button>
+                        <input class="form-check-input" data-user_id="' . $merchant->user_id . '" data-is_active="' . $merchant->is_active . '" type="checkbox" role="switch" id="activeMerchant" ' . $is_active . '>
+                        <button class="btn btn-primary btn-sm viewMerchant" data-merchant_id="' . $merchant->merchant_id . '" style="margin-left: 13px;" ' . $button_disabled . '><span class="ti ti-eye"></span> View</button>
+                        <button class="btn btn-warning btn-sm restrictMerchant" data-action="' . $restrict_label . '" data-user_id="' . $merchant->user_id . '" style="margin-left: 13px;"><span class="ti ti-ban"></span> ' . $restrict_label . '</button>
                     </div>
                 ';
 
+                $password_length = strlen($merchant->secret);
+                $asterisk = str_repeat("*", $password_length);
+
                 return [
-                    "merchant_name" => $merchants->name,
-                    "merchant_email" => $merchants->email,
-                    "merchant_password" => $merchants->secret,
+                    "merchant_name" => $merchant->name,
+                    "merchant_email" => $merchant->email,
+                    "merchant_password" => $asterisk,
                     "action" => $action,
                 ];
 
@@ -152,7 +158,8 @@ class AdminController extends Controller
 
     }
 
-    public function merchantsInfo() {
+    public function merchantsInfo()
+    {
         $merchant_id = \Request::get("merchant_id");
 
         $merchant = Merchant::join("users", "merchants.user_id", "=", "users.id")
@@ -165,10 +172,14 @@ class AdminController extends Controller
             ])
             ->first();
 
-        return view("admin.merchants_info", compact("merchant"));
+        $password_count = strlen($merchant->secret);
+        $asterisk = str_repeat("*", $password_count);
+
+        return view("admin.merchants_info", compact("merchant", "asterisk"));
     }
 
-    public function merchantsUpdateInfo() {
+    public function merchantsUpdateInfo()
+    {
         $merchant_id = \Request::get("merchant_id");
         $merchant_name = \Request::get("merchant_name");
 
@@ -187,11 +198,13 @@ class AdminController extends Controller
         }
     }
 
-    public function customers() {
+    public function customers()
+    {
         return view("admin.customers");
     }
 
-    public function customersData() {
+    public function customersData()
+    {
 
         $customers = Customer::join("users", "customers.user_id", "=", "users.id")
             ->get([
@@ -232,7 +245,8 @@ class AdminController extends Controller
         return response()->json($data_table);
     }
 
-    public function customersInfo() {
+    public function customersInfo()
+    {
         $customer_id = \Request::get("customer_id");
 
         $customer = Customer::join("users", "customers.user_id", "=", "users.id")
@@ -248,10 +262,14 @@ class AdminController extends Controller
             ])
             ->first();
 
-        return view("admin.customers_info", compact("customer"));
+        $password_count = strlen($customer->secret);
+        $asterisk = str_repeat("*", $password_count);
+
+        return view("admin.customers_info", compact("customer", "asterisk"));
     }
 
-    public function customersUpdate() {
+    public function customersUpdate()
+    {
         $customer_id = \Request::get("customer_id");
         $name = \Request::get("name");
         $contact_number = \Request::get("contact_number");
@@ -281,10 +299,11 @@ class AdminController extends Controller
         }
     }
 
-    public function customerDeactivate() {
+    public function customerDeactivate()
+    {
         $customer_id = \Request::get("customer_id");
 
-        $customer = Customer::find($customer_id); 
+        $customer = Customer::find($customer_id);
         $user = User::find($customer->user_id);
         $user->is_active = $user->is_active == 1 ? 0 : 1;
         $user->update();

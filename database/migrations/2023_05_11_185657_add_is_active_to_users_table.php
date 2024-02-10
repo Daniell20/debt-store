@@ -15,6 +15,7 @@ class AddIsActiveToUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('is_active')->default(1)->after('is_admin');
+            $table->boolean('is_restricted')->default(1)->after('is_active')->default(0);
         });
     }
 

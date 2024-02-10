@@ -14,6 +14,7 @@ use App\Merchant;
 use App\Product;
 use App\Store;
 use App\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 
@@ -105,8 +106,8 @@ class MerchantController extends Controller
         $products = \DB::table('products')->join('stores', 'products.store_id', '=', 'stores.id')
             ->join('merchants', 'stores.merchant_id', '=', 'merchants.id')
             ->where('merchants.user_id', \Auth::user()->id)
-            ->select(['products.id', 'products.name', 'price', 'description', 'image'])
-            ->orderBy('price', 'ASC')
+            ->select(['products.id', 'products.name', 'price', 'description', 'image', "stores.name as store_name", "products.created_at"])
+            ->orderBy('products.created_at', 'DESC')
             ->get();
 
         $stores = Store::join('merchants', 'stores.merchant_id', '=', 'merchants.id')
@@ -115,7 +116,9 @@ class MerchantController extends Controller
             ->select(['stores.id as store_id', 'stores.name as store_name'])
             ->get();
 
-        return view('product.index', compact('products', 'stores'));
+        $user = Auth::user();
+
+        return view('product.index', compact('products', 'stores', "user"));
     }
 
     public function saveProduct(Request $request)
@@ -283,7 +286,9 @@ class MerchantController extends Controller
             ->select(['stores.id', 'stores.name', 'stores.address', 'stores.phone', 'stores.email', 'stores.logo'])
             ->get();
 
-        return view('store.index', compact('stores'));
+        $user = Auth::user();
+
+        return view('store.index', compact('stores', "user"));
     }
 
     public function saveStore(Request $request)
@@ -328,7 +333,9 @@ class MerchantController extends Controller
         $merchant = Merchant::where("user_id", \Auth::user()->id)->first();
         $loan_settings = LoanSetting::where("merchant_id", $merchant->id)->count();
 
-        return view('customer.index', compact("loan_settings"));
+        $user = Auth::user();
+
+        return view('customer.index', compact("loan_settings", "user"));
     }
 
     public function customerLoanStatus()
@@ -345,10 +352,23 @@ class MerchantController extends Controller
             ->join("debt_statuses", "debts.debt_status_id", "=", "debt_statuses.id")
             ->join("debt_interests", "debt_interests.debt_id", "=", "debts.id")
             ->join("loan_settings", "debt_interests.loan_setting_id", "=", "loan_settings.id")
+            ->join("stores", "products.store_id", "=", "stores.id")
             ->where("customers.merchant_id", $merchant->id)
             ->orderBy("debts.debt_status_id", "DESC")
             ->orderBy("debts.updated_at", "ASC")
-            ->get(["customers.name as customer_name", "debts.is_claimed", "products.name as product_name", "debt_statuses.name as debt_status_name", "debts.debt_status_id", "debts.due_date", "debts.id as debt_id", "loan_settings.interest_rate", "debts.amount"]);
+            ->select(
+                "customers.name as customer_name",
+                "debts.is_claimed",
+                "products.name as product_name",
+                "debt_statuses.name as debt_status_name",
+                "debts.debt_status_id",
+                "debts.due_date",
+                "debts.id as debt_id",
+                "loan_settings.interest_rate",
+                "debts.amount",
+                "stores.name as store_name"
+            )
+            ->get();
 
         $data_table = collect($customer_debts)
             ->map(function ($customer_debt) {
@@ -373,7 +393,7 @@ class MerchantController extends Controller
 
                 return [
                     "customer_name" => $customer_debt["customer_name"],
-                    "product_owed" => $customer_debt["product_name"],
+                    "product_owed" => $customer_debt["product_name"] . " - " . $customer_debt["store_name"],
                     "amount" => "<span class='ti ti-currency-peso'></span>" . $customer_debt["amount"],
                     "interest_rate" => $customer_debt["interest_rate"] . "%",
                     "debt_status" => $debt_status,
@@ -401,9 +421,10 @@ class MerchantController extends Controller
 
                 $action = '
                     <a class="btn btn-primary btn-sm viewCustomerDetail" data-customer_id="' . $user["customer_id"] . '"><span class="ti ti-eye-check"></span> View</a>
+                    
                     <a class="btn btn-danger btn-sm deactivateCustomerButton" data-status_id="' . $user["is_active"] . '" data-user_id="' . $user["user_id"] . '"><span class="ti ti-trash"></span> ' . $status_name . '</a>
                 ';
-
+                // <a class="btn btn-warning btn-sm restrictCustomerButton" data-customer_id="' . $user["customer_id"] . '"><span class="ti ti-ban"></span> Restrict</a>
                 return [
                     "customer_id" => $user["customer_no"],
                     "name" => $user["name"],
@@ -435,7 +456,10 @@ class MerchantController extends Controller
             ->select("customers.id as customer_id", "users.email", "users.secret", "customers.name", "customers.address", "customers.contact_number", "customers.credit_limit", "users.is_active")
             ->get()->first();
 
-        return view("customer.modal-data", compact("customer"));
+        $password_length = strlen($customer->secret);
+        $password_asterisk = str_repeat("*", $password_length);
+
+        return view("customer.modal-data", compact("customer", "password_asterisk"));
     }
 
     public function saveCustomerDetail()

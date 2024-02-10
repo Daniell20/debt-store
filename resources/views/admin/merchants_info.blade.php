@@ -14,7 +14,7 @@
 				
 				<div class="col-6">
 					<label for="secret" class="form-label">Password</label>
-					<input type="text" class="form-control" value="{{ $merchant->secret }}" disabled>
+					<input type="text" class="form-control" value="{{ $asterisk }}" disabled>
 				</div>
 			</div>
 

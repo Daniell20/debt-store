@@ -9,6 +9,7 @@ use App\DebtInterest;
 use App\LoanSetting;
 use App\Merchant;
 use App\Product;
+use App\RestrictedMerchant;
 use App\Store;
 use App\Transaction;
 use \App\User;
@@ -364,6 +365,7 @@ class UserController extends Controller
         $user_customer = Customer::where("user_id", \Auth::user()->id)->first();
 
         $user_debts = Debt::join("products", "debts.product_id", "=", "products.id")
+            ->join("stores", "products.store_id", "=", "stores.id")
             ->where("debts.customer_id", $user_customer->id)
             ->select([
                 "products.name",
@@ -374,6 +376,7 @@ class UserController extends Controller
                 "debts.amount",
                 "debts.id as debt_id",
                 "debts.is_claimed",
+                "stores.name as store_name"
             ])
             ->orderBy("is_claimed", "ASC")
             ->orderBy("updated_at", "DESC")
@@ -383,7 +386,7 @@ class UserController extends Controller
 
             ->map(function ($user_debt) {
 
-                $name = '<h6 class="fw-semibold mb-1">' . $user_debt["name"] . '</h6>';
+                $name = '<h6 class="fw-semibold mb-1">' . $user_debt["name"] . " - " . $user_debt["store_name"] . '</h6>';
                 $description = '<p class="mb-0 fw-normal">' . $user_debt["description"] . '</p>';
                 $date_loaned = '<div class="d-flex align-items-center gap-2">
                                 <span class="badge bg-success rounded-3 fw-semibold">' . Carbon::parse($user_debt["created_at"])->format("m/d/Y") . '</span>
@@ -535,5 +538,46 @@ class UserController extends Controller
         } else {
             return response()->json(false);
         }
+    }
+
+    public function restrictAccount()
+    {
+        // retrieving the string date range
+        $date_range = \Request::get("restricted_days");
+
+        // exploding date
+        if ($date_range) {
+            $date_array = explode(" to ", $date_range);
+            $start_date = $date_array[0];
+            $end_date = $date_array[1];
+        }
+
+        // getting the user_id
+        $user_id = \Request::get("user_id");
+        $user = User::where("id", $user_id)->first();
+
+        // getting the merchant
+        $merchant = Merchant::where("merchants.user_id", $user->id)->first();
+
+        if (\Request::get("action") == "Restricted") {
+
+            $create_restricted_merchant = RestrictedMerchant::create([
+                "merchant_id" => $merchant->id,
+                "start_date" => $start_date,
+                "end_date" => $end_date,
+                "reason" => \Request::get("reason")
+            ]);
+        }
+        if (\Request::get("action") == "Unrestricted") {
+            $update_restricted_merchant = RestrictedMerchant::where("merchant_id", $merchant->id)->get()->last();
+            $update_restricted_merchant->update([
+                "end_date" => Carbon::now()->format("Y-m-d"),
+            ]);
+        }
+
+        $user->is_restricted = \Request::get("action") == "Unrestricted" ? 0 : 1;
+        $user->update();
+
+        return redirect()->route("admin.create_merchants")->with("success", $merchant->name . " is restricted.");
     }
 }

@@ -11,7 +11,7 @@ $(function () {
 			breakpoint: 480,
 			options: {
 				chart: {
-					width: 500
+					width: "100%"
 				},
 				legend: {
 					position: 'bottom'

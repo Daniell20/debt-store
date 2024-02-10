@@ -9,7 +9,7 @@
     
     <div class="col-md-4">
         <label for="password" class="form-label">Password</label>
-        <input class="form-control" type="text" value="{{ $customer->secret }}" disabled>
+        <input class="form-control" type="text" value="{{ $password_asterisk }}" disabled>
     </div>
 </div>
 

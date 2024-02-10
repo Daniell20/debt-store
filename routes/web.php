@@ -19,11 +19,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['role:merchant', 'role:customer'])->group(function () {
+Route::middleware(['role:merchant', 'role:customer', "role:admin"])->group(function () {
     Route::get("/users-profile", "UserController@userDetails")->name("users.profile");
     Route::post("/users-update_profile", "UserController@updateProfile")->name("user.update_profile");
 
     Route::post("/update-new_password", "UserController@updateNewPassword")->name("update.new-password");
+
+    Route::post("/restrict-account", "UserController@restrictAccount")->name("restrict.account");
 });
 
 Route::get("/user-interest", "InterestController@viewLoanInterestStatus")->name("users.interest");
@@ -46,6 +48,11 @@ Route::group(['middleware' => ['role:customer'], 'prefix' => 'customer'], functi
     Route::get("/loan-payment-success", "UserController@loanPaymentSuccess")->name("users.loan.payment.success");
     Route::get("/loan-payment-createWebhook", "UserController@loanPaymentCreateWebhook")->name("users.loan.payment.createWebhook");
     Route::get("/loan-payment-succesWebhook", "UserController@loanPaymentSuccessWebhook")->name("users.loan.payment.successWebhook");
+
+    ######## Report ########
+    Route::get("/report", "ReportController@index")->name("report.index");
+    Route::post("/report-post", "ReportController@reportPost")->name("report.post");
+
 
     ######## Create Payment Routes ########
     Route::get("/payments", "PaymentController@payments")->name("payment.loan.payments");
@@ -175,52 +182,62 @@ Route::group(['middleware' => ['role:admin'], 'prefix' => 'admin'], function () 
     Route::post("/customers-deactivate", "AdminController@customerDeactivate")->name("admin.customers.deactivate");
 
     Route::get("/history", "HistoryController@data")->name("admin.history");
+
+    Route::post("/restrict-account", "UserController@restrictAccount")->name("restrict.account");
+
+    // reports
+    Route::get("/reports-data-index", "ReportController@reportsDataIndex")->name("reports.data.index");
+    Route::get("/reports-data", "ReportController@data")->name("reports.data");
+});
+
+Route::group(['middleware' => ['role:merchant', 'merchant.restriction']], function () {
+    Route::post("/users-update_profile", "UserController@updateProfile")->name("user.update_profile");
+    Route::post("/update-new_password", "UserController@updateNewPassword")->name("update.new-password");
+    Route::post("/customer_update_detail", "MerchantController@customerUpdateDetail")->name("merchant.customer.update_detail");
+    Route::post("/change_password", "MerchantController@updatePassword")->name("merchant.update.password");
+    Route::post('/save-product', 'MerchantController@saveProduct')->name('merchant.product.save');
+    Route::post('/update-product', 'MerchantController@updateProduct')->name('merchant.product.update');
+    Route::post('/delete-product', 'MerchantController@deleteProduct')->name('merchant.product.delete');
+    Route::post('/save-store', 'MerchantController@saveStore')->name('merchant.store.save');
+    Route::post('/update-store', 'MerchantController@updateStore')->name('merchant.store.update');
+    Route::post('/delete-store', 'MerchantController@deleteStore')->name('merchant.store.delete');
+    Route::post("/loan-create_interest_setup", "LoanSettingController@create")->name("loan.create_interest_setup");
+    Route::post("/loan-interest_setup_update_data", "LoanSettingController@update")->name("loan.update_data");
+    Route::post("/loan-interest_setup_delete_data", "LoanSettingController@destroy")->name("loan.delete_data");
+    Route::post("/save-customer-details", "MerchantController@saveCustomerDetail")->name("save.customer.details");
+    Route::post("/deactivate-customer", "MerchantController@deactivateCustomer")->name("deactivate.customer");
+
 });
 
 ######## Merchant Routes ########
-Route::group(['middleware' => ['role:merchant'], 'prefix' => 'merchant'], function () {
+Route::group(['middleware' => ['role:merchant', "check.merchant.restriction"], 'prefix' => 'merchant'], function () {
     ####### Profile #######
     Route::get("/users-profile", "UserController@userDetails")->name("users.profile");
-    Route::post("/users-update_profile", "UserController@updateProfile")->name("user.update_profile");
+    Route::get('/dashboard', 'MerchantController@dashboard')->name('merchant.dashboard');
 
-    Route::post("/update-new_password", "UserController@updateNewPassword")->name("update.new-password");
 
     ####### Dashboard #######
-    Route::get('/dashboard', 'MerchantController@dashboard')->name('merchant.dashboard');
     Route::get('/customer', 'MerchantController@customer')->name('merchant.customer.index');
     Route::get("/customer_detail", "MerchantController@customerDetail")->name("merchant.customer.detail");
-    Route::post("/customer_update_detail", "MerchantController@customerUpdateDetail")->name("merchant.customer.update_detail");
 
     Route::get("/customer_loan_status", "MerchantController@customerLoanStatus")->name("merchant.customer_loan_status");
     Route::get("/customer_loan_status/data", "MerchantController@customerLoanStatusData")->name("merchant.customer_loan_status_data");
     Route::get("/customer_loan_interest_status", "InterestController@viewLoanInterestStatus")->name("merchant.customer_loan_interest_status");
 
     Route::get("/change_password", "MerchantController@changePassword")->name("merchant.change.password");
-    Route::post("/change_password", "MerchantController@updatePassword")->name("merchant.update.password");
 
     Route::get('/product', 'MerchantController@product')->name('merchant.product.index');
-    Route::post('/save-product', 'MerchantController@saveProduct')->name('merchant.product.save');
     Route::get('/get-product', 'MerchantController@getProduct')->name('merchant.product.get');
-    Route::post('/update-product', 'MerchantController@updateProduct')->name('merchant.product.update');
-    Route::post('/delete-product', 'MerchantController@deleteProduct')->name('merchant.product.delete');
 
     Route::get('/store', 'MerchantController@store')->name('merchant.store.index');
-    Route::post('/save-store', 'MerchantController@saveStore')->name('merchant.store.save');
-    Route::post('/update-store', 'MerchantController@updateStore')->name('merchant.store.update');
-    Route::post('/delete-store', 'MerchantController@deleteStore')->name('merchant.store.delete');
     Route::get("/get-store", "MerchantController@getStore")->name("merchant.store.get");
 
     // Loan Settings
     Route::get('/loan-setup', 'LoanSettingController@index')->name('loan.setup');
-    Route::post("/loan-create_interest_setup", "LoanSettingController@create")->name("loan.create_interest_setup");
     Route::get("/loan-interest_setup_data", "LoanSettingController@show")->name("loan.show_data");
     Route::get("/loan-interest_setup_edit_data", "LoanSettingController@edit")->name("loan.edit_data");
-    Route::post("/loan-interest_setup_update_data", "LoanSettingController@update")->name("loan.update_data");
-    Route::post("/loan-interest_setup_delete_data", "LoanSettingController@destroy")->name("loan.delete_data");
 
     Route::get('/customer-data', 'MerchantController@customerData')->name('customer-data.index');
-    Route::post("/save-customer-details", "MerchantController@saveCustomerDetail")->name("save.customer.details");
-    Route::post("/deactivate-customer", "MerchantController@deactivateCustomer")->name("deactivate.customer");
 
     Route::get('/edit-profile/{id}', 'MerchantController@editProfile')->name('edit-profile');
     Route::get('/view-profile/{id}', 'MerchantController@viewProfile')->name('view-profile');

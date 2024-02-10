@@ -30,6 +30,14 @@
                         <span class="hide-menu">Shop</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('report.index') }}" aria-expanded="false">
+                        <span>
+                            <i class="ti ti-message-report"></i>
+                        </span>
+                        <span class="hide-menu">Report</span>
+                    </a>
+                </li>
                 {{-- <li class="nav-small-cap">
                     <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
                     <span class="hide-menu">Account</span>
